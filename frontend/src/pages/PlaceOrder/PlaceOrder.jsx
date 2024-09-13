@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const PlaceOrder = () => {
-
     const [payment, setPayment] = useState("cod")
     const [data, setData] = useState({
         firstName: "",
@@ -21,7 +20,7 @@ const PlaceOrder = () => {
         phone: ""
     })
 
-    const { getTotalCartAmount, token, food_list, cartItems, url, setCartItems,currency,deliveryCharge } = useContext(StoreContext);
+    const { getTotalCartAmount, token, food_list, cartItems, url, setCartItems, currency, deliveryCharge } = useContext(StoreContext);
 
     const navigate = useNavigate();
 
@@ -31,20 +30,24 @@ const PlaceOrder = () => {
         setData(data => ({ ...data, [name]: value }))
     }
 
+    const formatCurrency = (amount) => {
+        return (Math.round(amount * 100) / 100).toFixed(2);
+    };
+
     const placeOrder = async (e) => {
         e.preventDefault()
         let orderItems = [];
-        food_list.map(((item) => {
+        food_list.forEach((item) => {
             if (cartItems[item._id] > 0) {
                 let itemInfo = item;
                 itemInfo["quantity"] = cartItems[item._id];
                 orderItems.push(itemInfo)
             }
-        }))
+        })
         let orderData = {
             address: data,
             items: orderItems,
-            amount: getTotalCartAmount() + deliveryCharge,
+            amount: formatCurrency(getTotalCartAmount() + deliveryCharge),
         }
         if (payment === "stripe") {
             let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
@@ -56,7 +59,7 @@ const PlaceOrder = () => {
                 toast.error("Something Went Wrong")
             }
         }
-        else{
+        else {
             let response = await axios.post(url + "/api/order/placecod", orderData, { headers: { token } });
             if (response.data.success) {
                 navigate("/myorders")
@@ -67,12 +70,11 @@ const PlaceOrder = () => {
                 toast.error("Something Went Wrong")
             }
         }
-
     }
 
     useEffect(() => {
         if (!token) {
-            toast.error("to place an order sign in first")
+            toast.error("To place an order, sign in first")
             navigate('/cart')
         }
         else if (getTotalCartAmount() === 0) {
@@ -104,28 +106,28 @@ const PlaceOrder = () => {
                 <div className="cart-total">
                     <h2>Cart Totals</h2>
                     <div>
-                        <div className="cart-total-details"><p>Subtotal</p><p>{currency}{getTotalCartAmount()}</p></div>
+                        <div className="cart-total-details"><p>Subtotal</p><p>{currency}{formatCurrency(getTotalCartAmount())}</p></div>
                         <hr />
-                        <div className="cart-total-details"><p>Delivery Fee</p><p>{currency}{getTotalCartAmount() === 0 ? 0 : deliveryCharge}</p></div>
+                        <div className="cart-total-details"><p>Delivery Fee</p><p>{currency}{formatCurrency(deliveryCharge)}</p></div>
                         <hr />
-                        <div className="cart-total-details"><b>Total</b><b>{currency}{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + deliveryCharge}</b></div>
+                        <div className="cart-total-details"><b>Total</b><b>{currency}{formatCurrency(getTotalCartAmount() + deliveryCharge)}</b></div>
                     </div>
                 </div>
                 <div className="payment">
                     <h2>Payment Method</h2>
                     <div onClick={() => setPayment("cod")} className="payment-option">
                         <img src={payment === "cod" ? assets.checked : assets.un_checked} alt="" />
-                        <p>COD ( Cash on delivery )</p>
+                        <p>COD (Cash on Delivery)</p>
                     </div>
                     <div onClick={() => setPayment("stripe")} className="payment-option">
                         <img src={payment === "stripe" ? assets.checked : assets.un_checked} alt="" />
-                        <p>Stripe ( Credit / Debit )</p>
+                        <p>Stripe (Credit/Debit Card)</p>
                     </div>
                 </div>
-                <button className='place-order-submit' type='submit'>{payment==="cod"?"Place Order":"Proceed To Payment"}</button>
+                <button className='place-order-submit' type='submit'>{payment === "cod" ? "Place Order" : "Proceed To Payment"}</button>
             </div>
         </form>
     )
 }
 
-export default PlaceOrder
+export default PlaceOrder;
