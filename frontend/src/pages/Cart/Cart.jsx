@@ -12,6 +12,9 @@ const Cart = () => {
     return (Math.round(amount * 100) / 100).toFixed(2);
   };
 
+  const totalCartAmount = getTotalCartAmount();
+  const isCartEmpty = totalCartAmount === 0;
+
   return (
     <div className='cart'>
       <div className="cart-items">
@@ -43,13 +46,24 @@ const Cart = () => {
         <div className="cart-total">
           <h2>Cart Totals</h2>
           <div>
-            <div className="cart-total-details"><p>Subtotal</p><p>{currency}{formatCurrency(getTotalCartAmount())}</p></div>
+            <div className="cart-total-details">
+              <p>Subtotal</p>
+              <p>{currency}{isCartEmpty ? formatCurrency(0) : formatCurrency(totalCartAmount)}</p>
+            </div>
             <hr />
-            <div className="cart-total-details"><p>Delivery Fee</p><p>{currency}{getTotalCartAmount() === 0 ? formatCurrency(0) : formatCurrency(deliveryCharge)}</p></div>
+            <div className="cart-total-details">
+              <p>Delivery Fee</p>
+              <p>{currency}{isCartEmpty ? formatCurrency(0) : formatCurrency(deliveryCharge)}</p>
+            </div>
             <hr />
-            <div className="cart-total-details"><b>Total</b><b>{currency}{getTotalCartAmount() === 0 ? formatCurrency(deliveryCharge) : formatCurrency(getTotalCartAmount() + deliveryCharge)}</b></div>
+            <div className="cart-total-details">
+              <b>Total</b>
+              <b>{currency}{isCartEmpty ? formatCurrency(0) : formatCurrency(totalCartAmount + deliveryCharge)}</b>
+            </div>
           </div>
-          <button onClick={() => navigate('/order')}>PROCEED TO CHECKOUT</button>
+          <button onClick={() => navigate('/order')} disabled={isCartEmpty}>
+            PROCEED TO CHECKOUT
+          </button>
         </div>
         <div className="cart-promocode">
           <div>
